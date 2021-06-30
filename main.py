@@ -76,9 +76,17 @@ def exit(update, context):
 conv_handler = ConversationHandler(
      entry_points=[CommandHandler('reply', send)],
      states={
-        CHATID: [MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),chatid)],
-        MESSAGE: [MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),msg)],},
-    fallbacks=[MessageHandler(Filters.regex('^[E|e]xit$'), exit)])
+        CHATID: [
+          MessageHandler(
+            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),chatid)
+        ],
+        MESSAGE: [
+          MessageHandler(
+            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),msg)
+        ],
+     },
+    fallbacks= [
+      MessageHandler(Filters.regex('^[E|e]xit$'), exit)])
 dp_add(conv_handler)
 
 #To delete messages send by bot in someone's chat
@@ -113,9 +121,17 @@ def exit(update, context):
 conv_handler = ConversationHandler(
      entry_points=[CommandHandler('delete', delete)],
      states={
-        CHATID: [MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),chatid)],
-        MESSAGE: [MessageHandler(Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),msgid)],},
-    fallbacks=[MessageHandler(Filters.regex('^[E|e]xit$'), exit)])
+        CHATID: [
+          MessageHandler(
+            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),chatid)
+        ],
+        MESSAGE: [
+          MessageHandler(
+            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),msgid)
+        ],
+     },
+    fallbacks=[
+      MessageHandler(Filters.regex('^[E|e]xit$'), exit)])
 dp_add(conv_handler)
 
 def ask(update, context):
