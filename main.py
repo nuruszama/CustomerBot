@@ -1,6 +1,6 @@
 import logging
-from typing import Dict
-from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, ConversationHandler
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters, CallbackContext
 import os
 PORT = int(os.environ.get('PORT', 5000))
 
@@ -9,7 +9,8 @@ logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s
                     level=logging.INFO)
 
 logger = logging.getLogger(__name__)
-TOKEN = 'Your token from BotFather' """replace bot token here"""
+TOKEN = 'Your token from BotFather'
+"""replace bot token here"""
 # Create the Updater and pass it your bot's token.
 # Make sure to set use_context=True to use the new context based callbacks
 # Post version 12 this will no longer be necessary
@@ -17,7 +18,8 @@ updater = Updater(TOKEN, use_context=True)
 
 # Get the dispatcher to register handlers
 dp_add = updater.dispatcher.add_handler
-my_id = xxx """replace xxx with your chat_id so that bot can send yyou updates"""
+my_id = xxx
+"""replace xxx with your chat_id so that bot can send yyou updates"""
 # Define a few command handlers. These usually take the two arguments update and
 # context. Error handlers also receive the raised TelegramError object in error.
 
@@ -36,8 +38,6 @@ def start(update, context):
         )
 dp_add(CommandHandler("start", start))
 
-MESSAGE, CHATID = range (2)
-
 #Send a message when the command /help is issued.
 def help(update, context):
     update.message.reply_text('Help! I can only chat with you'
@@ -45,94 +45,24 @@ def help(update, context):
 dp_add(CommandHandler("help", help))
 
 #Replying to user using bot
-def send(update, context):
-    text = "Send 'Chat_id' then 'Message' one by one. Or send exit to cancel"
-    chat_id = update.message.chat_id
-    context.bot.send_message(text = text, chat_id = chat_id
+"""eg. /send your msg+chat_id to which you are sending msg"""
+def send(update: Update, context: CallbackContext):
+    text = context.args
+    msgs = ' '.join([str(item) for item in text])
+    msg = msgs.split('+')
+    context.bot.send_message(text=msg[0], chat_id=msg[1]
     )
-    return CHATID
-
-def chatid(update, context):
-    text = update.message.text
-    context.user_data['chatid'] = text
-    return MESSAGE
-
-def msg(update, context):
-    user_data = context.user_data
-    text = update.message.text
-    msg = user_data['chatid']
-    user_data[msg] = text
-
-    context.bot.send_message(chat_id=user_data['chatid'],
-                             text=user_data[msg])
-
-    return ConversationHandler.END
-    
-def exit(update, context):
-    update.message.reply_text("Ok. Exited")
-    
-    return ConversationHandler.END
-
-conv_handler = ConversationHandler(
-     entry_points=[CommandHandler('reply', send)],
-     states={
-        CHATID: [
-          MessageHandler(
-            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),chatid)
-        ],
-        MESSAGE: [
-          MessageHandler(
-            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),msg)
-        ],
-     },
-    fallbacks= [
-      MessageHandler(Filters.regex('^[E|e]xit$'), exit)])
-dp_add(conv_handler)
+dp_add(CommandHandler("send", send))
 
 #To delete messages send by bot in someone's chat
+"""eg. /delete chat_id+message_id"""
 def delete(update, context):
-    text = "Send 'Chat_id' then 'Message' one by one. Or send exit to cancel"
-    chat_id = update.message.chat_id
-    context.bot.send_message(text = text, chat_id = chat_id)
-    return CHATID
-
-def chatid(update, context):
-    text = update.message.text
-    context.user_data['chatid'] = text
-    return MESSAGE
-
-def msgid(update, context):
-    user_data = context.user_data
-    text = update.message.text
-    msgid = user_data['chatid']
-    user_data[msgid] = text
-    
-    context.bot.delete_message(chat_id=user_data['chatid'],
-                               message_id=user_data[msgid])
-
-    return ConversationHandler.END
-    
-def exit(update, context):
-    update.message.reply_text(
-    "Ok. Exited")
-        
-    return ConversationHandler.END
-
-conv_handler = ConversationHandler(
-     entry_points=[CommandHandler('delete', delete)],
-     states={
-        CHATID: [
-          MessageHandler(
-            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),chatid)
-        ],
-        MESSAGE: [
-          MessageHandler(
-            Filters.text & ~(Filters.command | Filters.regex('^[E|e]xit$')),msgid)
-        ],
-     },
-    fallbacks=[
-      MessageHandler(Filters.regex('^[E|e]xit$'), exit)])
-dp_add(conv_handler)
+    text = context.args
+    msgs = ' '.join([str(item) for item in text])
+    msg = msgs.split('+')
+    context.bot.delete_message(chat_id=msg[0],
+                               message_id=msg[1])
+dp_add(CommandHandler('delete', delete))
 
 def ask(update, context):
     i = 0
